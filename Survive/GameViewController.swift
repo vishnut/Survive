@@ -9,19 +9,19 @@
 import UIKit
 import SpriteKit
 import AVFoundation
-
+/*
 extension SKNode {
-    class func unarchiveFromFile(file : String) -> SKNode? {
+    class func unarchiveFromFile(_ file : String) -> SKNode? {
         guard let
-            path = NSBundle.mainBundle().pathForResource(file, ofType: "sks"),
-            sceneData = try? NSData(contentsOfFile: path, options: .DataReadingMappedIfSafe) else {
+            path = Bundle.main.path(forResource: file, ofType: "sks"),
+            let sceneData = try? Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe) else {
                 return nil
         }
         
-        let archiver = NSKeyedUnarchiver(forReadingWithData: sceneData)
+        let archiver = NSKeyedUnarchiver(forReadingWith: sceneData)
         archiver.setClass(self.classForKeyedUnarchiver(), forClassName: "SKScene")
         
-        guard let scene = archiver.decodeObjectForKey(NSKeyedArchiveRootObjectKey) as? GameScene else {
+        guard let scene = archiver.decodeObject(forKey: NSKeyedArchiveRootObjectKey) as? GameScene else {
             return nil
         }
         
@@ -29,115 +29,76 @@ extension SKNode {
         return scene
     }
 }
-
+*/
 class GameViewController: UIViewController {
 
     var muzik: Bool = true
-    var musicplayer:AVAudioPlayer = AVAudioPlayer()
-    var scene: SKScene = SKScene()
-    var vcb:Bool = false
-    var vc:EndViewController=EndViewController()
+    weak var musicplayer:AVAudioPlayer? = AVAudioPlayer()
+    //weak var scene: GameScene?
+    var count = 0
+    var ending:Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-       /* if let scene = GameScene.unarchiveFromFile("GameScene") as? GameScene {
-            // Configure the view.
-            let skView = self.view as! SKView
-            skView.showsFPS = true
-            skView.showsNodeCount = true
-            
-            /* Sprite Kit applies additional optimizations to improve rendering performance */
-            skView.ignoresSiblingOrder = true
-            
-            /* Set the scale mode to scale to fit the window */
-            scene.scaleMode = .AspectFill
-            
-            skView.presentScene(scene)
-       }*/
-    }
-    
-    func setvc(v: EndViewController){
-        vc=v
-        vcb=true
     }
 
-    deinit {
-        debugPrint("Name_of_view_controlled deinitialized. GameScene")
-    }
-    
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if(muzik){
+        if(muzik && !self.ending){
             let skView:SKView = self.view as! SKView
             if(skView.scene == nil){
-                
+            
             do {
-            let musicurl:NSURL = NSBundle.mainBundle().URLForResource("bgmusic", withExtension: "mp3")!
-            try musicplayer = AVAudioPlayer(contentsOfURL: musicurl)
-            musicplayer.numberOfLoops = -1
-            musicplayer.prepareToPlay()
-            musicplayer.play()
+            let musicurl:URL = Bundle.main.url(forResource: "bgmusic", withExtension: "mp3")!
+            try musicplayer = AVAudioPlayer(contentsOf: musicurl)
+            musicplayer?.numberOfLoops = -1
+            musicplayer?.prepareToPlay()
+            musicplayer?.play()
             }
             catch {
                 print(error)
             }
             
-
             skView.ignoresSiblingOrder = true
             let scene = GameScene(size: skView.bounds.size, par: self)
-            scene.scaleMode = .AspectFill
+            scene.vc = self
+            scene.scaleMode = .aspectFill
             skView.presentScene(scene)
             }
         }
     }
     
-   /* override func viewWillLayoutSubviews() {
-        if(muzik){
-        var musicurl:NSURL = NSBundle.mainBundle().URLForResource("bgmusic", withExtension: "mp3")!
-        musicplayer=AVAudioPlayer(contentsOfURL: musicurl, error: nil)
-        musicplayer.numberOfLoops = -1
-        musicplayer.prepareToPlay()
-        musicplayer.play()
-        var skView:SKView = self.view as! SKView
-        skView.ignoresSiblingOrder = true
-        scene = GameScene(size: skView.bounds.size, par: self)
-        scene.scaleMode = .AspectFill
-        skView.presentScene(scene)
-        }
-    }*/
-    
-    func done(score: Int){
+    func done(_ score: Int){
+        count += 1
         print(score)
-        //viewWillAppear(true)
-        let skView:SKView = self.view as! SKView
-        skView.presentScene(nil)
-        musicplayer.stop()
+        if(count < 2){
+        musicplayer?.stop()
         muzik = false
-        scene.removeFromParent()
-        scene = SKScene()
-        //var end:EndViewController = EndViewController(scre: score)
-        //end.loadView()
-        if(vcb){
-            vc = self.storyboard!.instantiateViewControllerWithIdentifier("endscreen") as! EndViewController
+        let skView:SKView = self.view as! SKView
+        skView.scene?.removeFromParent()
+        let storage: UserDefaults = UserDefaults.standard
+        storage.set(score, forKey: "currscore")
+        //self.dismiss(animated: false, completion: nil)
+        if let endViewController = self.storyboard?.instantiateViewController(withIdentifier: "endscreen") as? EndViewController {
+                let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            appDelegate.window?.rootViewController?.dismiss(animated: false, completion: {
+                appDelegate.window?.rootViewController!.present(endViewController, animated: true, completion: nil)
+            })
+                //self.present(endViewController, animated: true, completion: nil)
+            }
         }
-        self.showViewController(vc as UIViewController, sender: nil)
-        vc.setscores(score)
-        vc.deleteme(self)
-        skView.removeFromSuperview()
-        
     }
 
-    override func shouldAutorotate() -> Bool {
+    override var shouldAutorotate : Bool {
         return true
     }
 
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return UIInterfaceOrientationMask.AllButUpsideDown
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            return UIInterfaceOrientationMask.allButUpsideDown
         } else {
-            return UIInterfaceOrientationMask.All
+            return UIInterfaceOrientationMask.all
         }
     }
 
@@ -146,7 +107,7 @@ class GameViewController: UIViewController {
         // Release any cached data, images, etc that aren't in use.
     }
 
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
 }
