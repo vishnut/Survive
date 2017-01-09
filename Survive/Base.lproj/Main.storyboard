@@ -204,7 +204,7 @@
                                 <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </segmentedControl>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wju-Io-l3E">
-                                <rect key="frame" x="187" y="200" width="52" height="31"/>
+                                <rect key="frame" x="187.5" y="200" width="52" height="31"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="50" id="d4n-lP-KvH"/>
                                 </constraints>

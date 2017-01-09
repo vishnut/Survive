@@ -34,9 +34,10 @@ class GameViewController: UIViewController {
 
     var muzik: Bool = true
     weak var musicplayer:AVAudioPlayer? = AVAudioPlayer()
-    //weak var scene: GameScene?
     var count = 0
     var ending:Bool = false
+    var zombieAtlas = SKTextureAtlas()
+    var zombieImages = [SKTexture]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
